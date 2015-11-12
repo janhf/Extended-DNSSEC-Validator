@@ -121,20 +121,6 @@ Extended DNSSEC Validator Add-on.  If not, see <http://www.gnu.org/licenses/>.
   display: none;
 }
 
-#identity-popup-secView-extval-domainUnsecured,
-#identity-popup-secView-extval-nxdomainUnsecured,
-#identity-popup-secView-extval-secureNxdomain,
-#identity-popup-secView-extval-domainBogus,
-#identity-popup-secView-extval-secureAddressSpoofed,
-#identity-popup-secView-extval-secureTransportInsecure,
-#identity-popup-secView-extval-certError,
-#identity-popup-secView-extval-certDNSSEC,
-#identity-popup-secView-extval-certCA,
-#identity-popup-secView-extval-certDNSSEC_CA,
-#identity-popup-secView-extval-certInvalidDNSSEC {
-  width: 200px;
-}
-
 #identity-popup[dnssec=domainUnsecured] [when-dnssec~=domainUnsecured],
 #identity-popup[dnssec=nxdomainUnsecured] [when-dnssec~=nxdomainUnsecured],
 #identity-popup[dnssec=secureNxdomain] [when-dnssec~=secureNxdomain],
