@@ -50,7 +50,7 @@ TODO:
 - Implement selector field "SPKI: Use subject public key"
    How to do that? Don't know howto get the data out of firefox.
    Implement own ASN.1 Parser for that field?
-
+- Figure out why the pageInfo.xul overlay does not work
    
 
 Thoughts:
