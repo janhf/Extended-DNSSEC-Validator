@@ -171,7 +171,7 @@ org.os3sec.Extval.DNSResolver = {
     
 	var res = this._executeLibunbound("_443._tcp."+domain, this.RRTYPE_TLSA);
 
-	for(var i=0 in res.rdata) {
+	for(var i in res.rdata) {
 	    var tlsa = this.parseTLSARecord(res.rdata[i]);
 	    domainRecord.tlsa.push(tlsa);
 

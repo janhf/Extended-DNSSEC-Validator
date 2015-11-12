@@ -42,6 +42,8 @@ window.addEventListener("unload", function() { org.os3sec.Extval.Extension.unini
 org.os3sec.Extval.Extension = {
   extvalExtID: "extended-validator@os3sec.org",
   debugOutput: false,
+  consoleOutput: null,
+  consoleOutputFlag: false,
   debugPrefix: "extval: ",
   prefBranch : "extensions.extval.",
   prefs: null,
@@ -57,6 +59,7 @@ org.os3sec.Extval.Extension = {
     
     // Read initial preferences
     this.getDebugOutputFlag(); // Enable debugging information on stdout if desired
+    this.getConsoleOutput(); // Enable debugging information on Browser Console if desired
     
     //initialize the UI and libunbound context
     org.os3sec.Extval.UIHandler.init();
@@ -82,11 +85,22 @@ org.os3sec.Extval.Extension = {
   	if(this.debugOutput) {
   		dump(this.debugPrefix + msg + "\n");
   	}
+  	if(this.consoleOutputFlag && this.consoleOutput != null) {
+  	  this.consoleOutput.log(this.debugPrefix + msg + "\n");
+  	}
   },
 
   getDebugOutputFlag: function() {
     this.debugOutput = this.prefs.getBoolPref("debugoutput");
-      this.logMsg("Setting debugoutput to " + this.debugOutput);
+    this.logMsg("Setting debugoutput to " + this.debugOutput);
+  },
+  
+  getConsoleOutput: function() {
+    this.consoleOutputFlag = this.prefs.getBoolPref("consoleoutput");
+    this.logMsg("Setting consoleOutputFlag to " + this.consoleOutputFlag);
+    if(this.consoleOutputFlag){
+      this.consoleOutput = (Cu.import("resource://gre/modules/devtools/Console.jsm", {})).console;
+    }
   },
 
   uninit: function() {
@@ -123,7 +137,15 @@ org.os3sec.Extval.Extension = {
     //prevent NS_ERRORS from StringBundle
     try {
       scheme = aLocationURI.scheme;             // Get URI scheme
+    } catch(ex) {
+        this.logMsg('Exception: ' + ex);
+    }
+    try {
       asciiHost = aLocationURI.asciiHost;       // Get punycoded hostname
+    } catch(ex) {
+        this.logMsg('Exception: ' + ex);
+    }
+    try {
       utf8Host = aLocationURI.host;             // Get UTF-8 encoded hostname
     } catch(ex) {
         this.logMsg('Exception: ' + ex);
@@ -132,13 +154,14 @@ org.os3sec.Extval.Extension = {
     this.logMsg('Scheme: "' + scheme + '"; ' + 'ASCII domain name: "' + asciiHost + '"');
 
     if (scheme == 'chrome' ||                   // Eliminate chrome scheme
+        scheme == 'about' ||                    // Eliminate about scheme
         asciiHost == null ||
         asciiHost == '' ||                      // Empty string
         asciiHost.indexOf("\\") != -1 ||        // Eliminate addr containing '\'
         asciiHost.indexOf(":") != -1 ||         // Eliminate IPv6 addr notation
         asciiHost.search(/[A-Za-z]/) == -1) {   // Eliminate IPv4 addr notation
 
-      if (this.debugOutput) dump(' ...invalid');
+      this.logMsg(' ...invalid');
 
       // Set error mode (no icon)
       org.os3sec.Extval.UIHandler.setState(org.os3sec.Extval.UIHandler.STATE_ERROR);

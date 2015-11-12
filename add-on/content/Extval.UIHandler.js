@@ -66,9 +66,6 @@ org.os3sec.Extval.UIHandler = {
   
   init : function() {
     this.strings = document.getElementById("extval-strings");
-    this.identityPopupExtvalLabel = document.getElementById("identity-popup-extval-label");
-    this.identityPopupContentVerifier = document.getElementById("identity-popup-content-verifier");
-    this.identityPopupDnssecIcon = document.getElementById("identity-popup-dnssec-icon");
     this.switchHttpsBox = document.getElementById("switch-https-box");
   },
 
@@ -76,7 +73,7 @@ org.os3sec.Extval.UIHandler = {
    * Updates the messages in identity popup when it opens
    */
   onIdentityPopupShow: function(event) {
-	this.setMessages(this._state);
+	  this.updateIdentityPopup(this._state);
   },
   
   /*
@@ -102,49 +99,58 @@ org.os3sec.Extval.UIHandler = {
    * STATE_* constants.
    */
   setState : function(uri, newState) {
-    org.os3sec.Extval.Extension.logMsg("Changing state to: "+newState + "("+ ((uri!=null)?uri.host:"null") +")");
+    org.os3sec.Extval.Extension.logMsg("Changing state to: "+newState + "("+ ((uri!=null)?uri:"null") +")");
     
     //stop updating if hostname changed during resolving process (tab has been switched)
     if(uri != null && uri.spec != gBrowser.currentURI.spec) {
-	org.os3sec.Extval.Extension.logMsg("Ignoring setState because current browser tab is different"+gBrowser.currentURI.host);
+	    org.os3sec.Extval.Extension.logMsg("Ignoring setState because current browser tab is different"+gBrowser.currentURI);
     	return;
     }
     
-    this.identityPopupDnssecIcon.className = newState;
     this._state = newState;
     this._uri = uri;
-    this.setMessages(newState);
+    this.updateIdentityPopup(newState);
     
     //disable the switch https button
     this.enableSwitchHttps(uri,false);
-    
-    //Focus attention on error status
-    if(newState == this.STATE_DOMAIN_BOGUS
-	|| newState == this.STATE_CERT_ERROR
-        || newState == this.STATE_CERT_INVALID_DNSSEC
-    ) {
-      //open the identity popup
-      document.getElementById("identity-box").click();
-      document.getElementById("urlbar").className = "stateError";
-    } else {
-      gIdentityHandler.hideIdentityPopup();
-      
-    }
   },
-
-  /**
-   * Set up the supplemental and tooltip messages for the identity popup,
-   * based on the specified state
-   *
-   * @param newMode The newly set security state. Should be one of the STATE_* constants.
-   */
-  setMessages: function(state) {
+  
+  updateIdentityPopup: function(state) {
+    let connection = document.getElementById("identity-popup").getAttribute("connection");
+	  
+	  if(state == this.STATE_DOMAIN_BOGUS
+	      || state == this.STATE_CERT_ERROR
+        || state == this.STATE_CERT_INVALID_DNSSEC
+    ) {
+      connection = "not-secure";
+    }
     
-    this.identityPopupExtvalLabel.textContent = this.strings.getString("extval."+state);
-	
-	//remove default self-signed certificate message
-	if(state == this.STATE_CERT_DNSSEC) {
-		this.identityPopupContentVerifier.textContent = "";
-	}
+    //if(state == this.STATE_CERT_DNSSEC) {
+      //Never _ever_declare something as secure! 
+      //e.g. not this way...
+      ///This will break mixed content detection for example...
+      //connection = "secure";
+    //}
+	  
+	  
+	  // Update all elements.
+    let elementIDs = [
+      "identity-popup",
+      "identity-popup-securityView-body",
+    ];
+
+    function updateAttribute(elem, attr, value) {
+      if (value) {
+        elem.setAttribute(attr, value);
+      } else {
+        elem.removeAttribute(attr);
+      }
+    }
+
+    for (let id of elementIDs) {
+      let element = document.getElementById(id);
+      updateAttribute(element, "connection", connection);
+      updateAttribute(element, "dnssec", this._state);
+    }
   }
 };

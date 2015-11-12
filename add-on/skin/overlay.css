@@ -66,16 +66,87 @@ Extended DNSSEC Validator Add-on.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Switch to https button */
 #switch-https-box {
-  background-color: rgb(95%,95%,95%);
-  background-image: -moz-linear-gradient(rgba(170,170,170,.25), rgba(0,0,0,.3));
-  box-shadow: 0 0 0 1px rgba(0,0,0,.1) inset;
-  border-radius: 1.5px;
-  width: 26px;
-  margin-left: 2px;
+  border-radius: 0px;
+  border-inline-end: 1px solid var(--urlbar-separator-color);
+  border-image-slice: 1 1 1 1;
+  margin-inline-end: 4px;
+  padding: 3px 5px;
+  width: 27px;
 }
+/*#switch-https-box:hover {
+  background-color: ;
+}*/
 #switch-https-box.disabled {
   display: none;
 }
 #switch-https-box > #switch-https-icon {
   list-style-image: url("chrome://extval/skin/unsecure.png");
+  width: 16px;
+}
+
+/*
+//Domain is not secured by DNSSEC
+  STATE_DOMAIN_UNSECURED                  : "domainUnsecured",
+  //Secure denial of existence
+  STATE_NXDOMAIN_UNSECURED                : "nxdomainUnsecured",
+  //Domain is secured, but domain name does not exist
+  STATE_SECURE_NXDOMAIN                   : "secureNxdomain",
+  //Domain is secured, invalid signature
+  STATE_DOMAIN_BOGUS                      : "domainBogus",
+  //Domain is secured, connected address is spoofed
+  STATE_SECURE_ADDRESS_SPOOFED            : "secureAddressSpoofed",
+  //Domain is secured, remote host verified
+  STATE_SECURE_TRANSPORT_INSECURE         : "secureTransportInsecure",
+  
+  //Domain is secured, cert error
+  STATE_CERT_ERROR                        : "certError",
+  //Domain is secured, cert validated by DNSSEC
+  STATE_CERT_DNSSEC                       : "certDNSSEC",
+  //Domain is secured, cert validated by CA
+  STATE_CERT_CA                           : "certCA",
+  //Domain is secured, cert validated by DNSSEC and CA
+  STATE_CERT_DNSSEC_CA                    : "certDNSSEC_CA",
+  //Domain is secured, cert invalid by DNSSEC
+  STATE_CERT_INVALID_DNSSEC               : "certInvalidDNSSEC",
+  
+  //Action
+  STATE_ACTION : "stateAction",
+  // Error or unknown state occured
+  STATE_ERROR : "stateError",
+*/
+
+
+/* Hide all conditional elements by default. */
+:-moz-any([when-dnssec]) {
+  display: none;
+}
+
+#identity-popup-secView-extval-domainUnsecured,
+#identity-popup-secView-extval-nxdomainUnsecured,
+#identity-popup-secView-extval-secureNxdomain,
+#identity-popup-secView-extval-domainBogus,
+#identity-popup-secView-extval-secureAddressSpoofed,
+#identity-popup-secView-extval-secureTransportInsecure,
+#identity-popup-secView-extval-certError,
+#identity-popup-secView-extval-certDNSSEC,
+#identity-popup-secView-extval-certCA,
+#identity-popup-secView-extval-certDNSSEC_CA,
+#identity-popup-secView-extval-certInvalidDNSSEC {
+  width: 200px;
+}
+
+#identity-popup[dnssec=domainUnsecured] [when-dnssec~=domainUnsecured],
+#identity-popup[dnssec=nxdomainUnsecured] [when-dnssec~=nxdomainUnsecured],
+#identity-popup[dnssec=secureNxdomain] [when-dnssec~=secureNxdomain],
+#identity-popup[dnssec=domainBogus] [when-dnssec~=domainBogus],
+#identity-popup[dnssec=secureAddressSpoofed] [when-dnssec~=secureAddressSpoofed],
+#identity-popup[dnssec=secureTransportInsecure] [when-dnssec~=secureTransportInsecure],
+#identity-popup[dnssec=certError] [when-dnssec~=certError],
+#identity-popup[dnssec=certDNSSEC] [when-dnssec~=certDNSSEC],
+#identity-popup[dnssec=certCA] [when-dnssec~=certCA],
+#identity-popup[dnssec=certDNSSEC_CA] [when-dnssec~=certDNSSEC_CA],
+#identity-popup[dnssec=certInvalidDNSSEC] [when-dnssec~=certInvalidDNSSEC],
+#identity-popup[dnssec=stateError] [when-dnssec~=stateError],
+#identity-popup[dnssec=stateAction] [when-dnssec~=stateAction] {
+  display: inherit;
 }

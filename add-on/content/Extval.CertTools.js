@@ -124,7 +124,7 @@ org.os3sec.Extval.CertTools = {
   },
 
   // Check against tlsa-specification
-    check_tlsa: function(cert, tlsa) {
+  check_tlsa: function(cert, tlsa) {
 	// With usage is 0 or 2, we walk up the chain of certificates until we have a match;
 	// With usage is 1 or 3, we just validate the certifite.
 	
@@ -185,13 +185,26 @@ org.os3sec.Extval.CertTools = {
     }
     else {
         // matchingType == 0 (exact content) is not supported yet
-	dump("TLSA record specifies full certificate info to match. Not supported. Rejecting validation!");
+	      org.os3sec.Extval.Extension.logMsg("TLSA record specifies full certificate info to match. Not supported. Rejecting validation!");
         return false;
     }
 
-    var len = {};
-    var der = cert.getRawDER(len);
-    hasher.update(der, der.length);
+    if (tlsa_record.selector == 0) {
+        var len = {};
+        var der = cert.getRawDER(len);
+        hasher.update(der, der.length);
+    }
+    else if(tlsa_record.selector == 1){
+        //TODO: Check subject public key only...
+        org.os3sec.Extval.Extension.logMsg("Unsupported: spki selector:"+tlsa_record.selector);
+        return false;
+    }
+    else {
+        //Unknown unsupported value...
+        org.os3sec.Extval.Extension.logMsg("TLSA Record Selector Value unknown. "+tlsa_record.selector);
+        return false;
+    }
+    
     var binHash = hasher.finish(false);
     
     // convert the binary hash data to a hex string.
@@ -203,7 +216,7 @@ org.os3sec.Extval.CertTools = {
 
     // return the two-digit hexadecimal code for a byte
     charcodeToHexString: function(charcode) {
-	return ("0" + charcode.toString(16)).slice(-2);
+	    return ("0" + charcode.toString(16)).slice(-2);
     },
   
   //gets valid or invalid certificate used by the browser
@@ -246,11 +259,32 @@ org.os3sec.Extval.CertTools = {
   },
   
   get_invalid_cert_SSLStatus: function(uri) {
-    var recentCertsSvc = 
-		Components.classes["@mozilla.org/security/recentbadcerts;1"]
-			.getService(Components.interfaces.nsIRecentBadCertsService);
-		if (!recentCertsSvc)
-			return null;
+    var recentCertsSvc = null;
+    // FF <= 19
+    if (typeof Components.classes['@mozilla.org/security/recentbadcerts;1'] !== 'undefined') {
+        recentCertsSvc = Components.classes['@mozilla.org/security/recentbadcerts;1']
+            .getService(Components.interfaces.nsIRecentBadCertsService);
+    }
+    // FF >= 20
+    else if (typeof Components.classes['@mozilla.org/security/x509certdb;1'] !== 'undefined') {
+        var certDB = Components.classes['@mozilla.org/security/x509certdb;1']
+            .getService(Components.interfaces.nsIX509CertDB);
+        if (!certDB) return null;
+
+        var privateMode = false;
+        // Seem to be unavailable in Nightly 24.0a1, so just to be safe...
+        if (typeof Components.classes['@mozilla.org/privatebrowsing;1'] !== 'undefined')
+            privateMode = Components.classes['@mozilla.org/privatebrowsing;1']
+                .getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
+
+        recentCertsSvc = certDB.getRecentBadCerts(privateMode);
+    }
+    else {
+        throw 'Failed to get "bad cert db" service (too new firefox version?)';
+    }
+
+    if (!recentCertsSvc)
+        return null;
 
 		var port = (uri.port == -1) ? 443 : uri.port;  
 

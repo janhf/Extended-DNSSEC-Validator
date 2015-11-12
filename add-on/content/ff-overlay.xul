@@ -47,19 +47,38 @@ Extended DNSSEC Validator Add-on.  If not, see <http://www.gnu.org/licenses/>.
 
   <popupset id="mainPopupSet">
 	<!-- Extend popup for site identity information -->
+	<!-- browser.js/refreshIdentityPopup() -->
 	<panel id="identity-popup">
-		<hbox id="identity-popup-container">
-			<image removeelement="true" id="identity-popup-icon" />
-			<vbox id="identity-popup-status-box" insertbefore="identity-popup-content-box">
-				<image id="identity-popup-dnssec-icon" />
-				<image id="identity-popup-icon" />
-			</vbox>
-			<vbox id="identity-popup-content-box">
-				<hbox id="identity-popup-extval" flex="1" insertbefore="identity-popup-connectedToLabel">
-					<description id="identity-popup-extval-label" class="identity-popup-description" insertbefore="identity-popup-connectedToLabel" />
-				</hbox>
-			</vbox>
-		</hbox>
+	  <panelmultiview id="identity-popup-multiView">
+	   <panelview id="identity-popup-mainView">
+	    <hbox id="identity-popup-security">
+	     <vbox id="identity-popup-security-content">
+	      <description class="identity-popup-connection-secure" insertbefore="identity-popup-security-descriptions" when-dnssec="certDNSSEC_CA">&extval.simpleSecureDNSSECTLSACA;</description>
+	      <description class="identity-popup-connection-secure" insertbefore="identity-popup-security-descriptions" when-dnssec="certDNSSEC">&extval.simpleSecureDNSSECTLSA;</description>
+	      <description class="identity-popup-connection-not-secure" insertbefore="identity-popup-security-descriptions" when-dnssec="certInvalidDNSSEC domainBogus secureAddressSpoofed">&extval.simpleSecureDNSSECFAIL;</description>
+	      <vbox id="identity-popup-security-descriptions">
+	       <description class="identity-popup-warning-gray" when-dnssec="domainUnsecured">&extval.domainUnsecured;</description>
+	       <description class="identity-popup-warning-yellow"  when-dnssec="certInvalidDNSSEC">&extval.simpleCertInvalidDNSSEC;</description>
+	      </vbox>
+	     </vbox>
+	    </hbox>
+	   </panelview>
+	   <panelview id="identity-popup-securityView">
+	    <vbox id="identity-popup-securityView-body">
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-domainUnsecured" when-dnssec="domainUnsecured">&extval.domainUnsecured;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-nxdomainUnsecured" when-dnssec="nxdomainUnsecured">&extval.nxdomainUnsecured;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-secureNxdomain" when-dnssec="secureNxdomain">&extval.secureNxdomain;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-domainBogus" when-dnssec="domainBogus">&extval.domainBogus;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-secureAddressSpoofed" when-dnssec="secureAddressSpoofed">&extval.secureAddressSpoofed;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-secureTransportInsecure" when-dnssec="secureTransportInsecure">&extval.secureTransportInsecure;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-certError" when-dnssec="certError">&extval.certError;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-certDNSSEC" when-dnssec="certDNSSEC">&extval.certDNSSEC;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-certCA" when-dnssec="certCA">&extval.certCA;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-certDNSSEC_CA" when-dnssec="certDNSSEC_CA">&extval.certDNSSEC_CA;</description>
+	     <description insertbefore="identity-popup-content-verified-by" id="identity-popup-secView-extval-certInvalidDNSSEC" when-dnssec="certInvalidDNSSEC">&extval.certInvalidDNSSEC;</description>
+	    </vbox>
+	   </panelview>
+	  </panelmultiview>
 	</panel>
   </popupset>
   
@@ -71,12 +90,12 @@ Extended DNSSEC Validator Add-on.  If not, see <http://www.gnu.org/licenses/>.
   <textbox id="urlbar">
     <!-- Extend the identity box in urlbar -->
     <box id="identity-box" role="button"
-         onclick="gIdentityHandler.handleIdentityButtonEvent(event); org.os3sec.Extval.UIHandler.onIdentityPopupShow();"
-         onkeypress="gIdentityHandler.handleIdentityButtonEvent(event); org.os3sec.Extval.UIHandler.onIdentityPopupShow();">
+         onclick="gIdentityHandler.handleIdentityButtonEvent(event); org.os3sec.Extval.UIHandler.onIdentityPopupShow(event);"
+         onkeypress="gIdentityHandler.handleIdentityButtonEvent(event); org.os3sec.Extval.UIHandler.onIdentityPopupShow(event);">
     </box>
     <box id="switch-https-box" role="button"
          onclick="org.os3sec.Extval.UIHandler.switchHttps();"
-         onkeypress="org.os3sec.Extval.UIHandler.switchHttps();">
+         onkeypress="org.os3sec.Extval.UIHandler.switchHttps();" insertafter="identity-box">
       <image id="switch-https-icon" />
     </box>
   </textbox>

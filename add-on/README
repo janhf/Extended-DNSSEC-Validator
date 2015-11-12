@@ -1,1 +1,39 @@
 https://os3sec.org
+
+
+TODO:
+======
+- Rewrite TLSA Check, should give 3 return values:
+   validated: Everything is ok.
+   validation failed: No TLSA Record matches, but there are some...
+   validation impossible: No TLSA Records or some implementation missing.
+- Make the DNSSec values appear in the "more info" window for the page.
+   https://dxr.mozilla.org/mozilla-central/source/browser/base/content/pageinfo/pageInfo.xul
+- Distinguish between DNSSEC failures "IP" authenticated and certificate 
+   authenticated. Example: example.com is signed. service.example.com is 
+   a cname to server55.cloud.com. The tlsa record 
+   _443._tcp.service.example.com is signed and can be validated with DNSSEC
+   but the IP adress cannot be authenticated.
+- Option to use system resolver with +ad flag? (No key material in extension...)
+- Testsuite
+   States for IP Record:
+   - Secure (correctly signed)
+   - Insecure (not signed/authenticated)
+   - failed (should be signed but is not...)
+   States for TLSA record:
+   - existing, fits certificate of ssl connection, secure
+   - existing, fits, insecure
+   - existing, fits, failed
+   - existing, not fitting, secure
+   - existing, not fitting, insecure
+   - existing, not fitting, failed
+   - not existing, secure
+   - not existing, insecure
+   - not existing, failed
+   
+Thoughts:
+==========
+- Authentication of DNS-Names in certificates is possible without accessing
+   the server. We may implement that part in some other UI (maybe inside the
+   view certificate thing?) - doesn't work, we need port and proto -> page-info
+- 

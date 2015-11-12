@@ -1,0 +1,19 @@
+<!ENTITY identity.switchhttps "Zu HTTPS wechseln?">
+<!ENTITY extval.switchhttps "Zu HTTPS wechseln?">
+<!ENTITY extval.domainUnsecured "DNSSec ist nicht verfügbar.">
+<!ENTITY extval.nxdomainUnsecured "DNSSec: unsecure Nxdomain">
+<!ENTITY extval.secureNxdomain "DNSSec: secure Nxdomain">
+<!ENTITY extval.domainBogus "DNSSec: Die Domain hat eine ungültige Signatur.">
+<!ENTITY extval.secureAddressSpoofed "DNSSec: Sie sind mit der falschen IP-Adresse verbunden.">
+<!ENTITY extval.secureTransportInsecure "DNSSec: Sie sind mit der richtigen IP-Adresse verbunden, aber das Zertifikat könnte nicht überprüft werden.">
+<!ENTITY extval.certError "DNSSec: certError">
+<!ENTITY extval.certDNSSEC "DNSSec: Sie sind mit der richtigen IP-Adresse verbunden und das Zertifikat konnte per DNSSec überprüft werden.">
+<!ENTITY extval.certCA "DNSSec: Sie sind mit der richtigen IP-Adresse verbunden und das Zertifikat konnte mit einer Zertifizierungsstelle des Browsers überprüft werden.">
+<!ENTITY extval.certDNSSEC_CA "DNSSec: Sie sind mit der richtigen IP-Adresse verbunden und das Zertifikat konnte sowohl mit einer Zertifizierungsstelle des Browsers als auch mit DNSSec überprüft werden.">
+<!ENTITY extval.certInvalidDNSSEC "DNSSec: Sie sind mit der richtigen IP-Adresse verbunden und das Zertifikat konnte mit einer Zertifizierungsstelle des Browsers überprüft werden. Dieses Zertifikat stimmt aber nicht mit dem im DNS hinterlegten Zertifikat überein.">
+<!ENTITY extval.simpleSecureDNSSECTLSACA "...mit DNSSec">
+<!ENTITY extval.simpleSecureDNSSECTLSA "...nur mit DNSSec">
+<!ENTITY extval.simpleSecureDNSSECFAIL "DNSSec Prüfung fehlgeschlagen.">
+<!ENTITY extval.simpleCertInvalidDNSSEC "DNSSec hat das Zertifikat als gefälscht gekennzeichnet.">
+<!ENTITY extval.securityView.identity.verifierIP "IP-Adresse:">
+<!ENTITY extval.securityView.identity.verifierTLSA "Server-Zertifikat:">

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+This file is part of Extended DNSSEC Validator Add-on.
+
+Extended DNSSEC Validator Add-on is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Extended DNSSEC Validator Add-on is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+In addition, as a special exception, the copyright holders give
+permission to link the code of portions of this program with the
+OpenSSL library under certain conditions as described in each
+individual source file, and distribute linked combinations
+including the two.
+You must obey the GNU General Public License in all respects
+for all of the code used other than OpenSSL.  If you modify
+file(s) with this exception, you may extend this exception to your
+version of the file(s), but you are not obligated to do so.  If you
+do not wish to do so, delete this exception statement from your
+version.  If you delete this exception statement from all source
+files in the program, then also delete it here.
+
+You should have received a copy of the GNU General Public License along with
+Extended DNSSEC Validator Add-on.  If not, see <http://www.gnu.org/licenses/>.
+***** END LICENSE BLOCK ***** -->
+
+<?xml-stylesheet href="chrome://extval/skin/pageInfo.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://extval/locale/overlay.dtd">
+<overlay id="extval-pageInfo-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="pageInfo.js"/>
+  
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="extval-strings" src="chrome://extval/locale/extval.properties"/>
+  </stringbundleset>
+
+  <deck id="mainDeck">
+   <vbox id="securityPanel">
+    <groupbox id="security-identity-groupbox">
+     <grid id="security-identity-grid">
+      <rows id="security-identity-rows">
+       <row id="security-identity-verifierIP-extval-row" insertafter="security-identity-verifier-row">
+        <label id="security-identity-verifierIP-extval-label" class="fieldLabel" value="&extval.securityView.identity.verifierIP;" control="security-identity-verifierIP-extval-value"/>
+        <textbox id="security-identity-verifierIP-extval-value" class="fieldValue" readonly="true" />
+       </row>
+       <row id="security-identity-verifierTLSA-extval-row" insertafter="security-identity-verifier-row">
+        <label id="security-identity-verifierTLSA-extval-label" class="fieldLabel" value="&extval.securityView.identity.verifierTLSA;" control="security-identity-verifierTLSA-extval-value"/>
+        <textbox id="security-identity-verifierTLSA-extval-value" class="fieldValue" readonly="true" />
+       </row>
+      </rows>
+     </grid>
+    </groupbox>
+   </vbox>
+  </deck>
+</overlay>
+
