@@ -1,8 +1,9 @@
-https://os3sec.org
-
 WebPages for testing:
 ======================
-bund.de: Valid DNSSEC and TLSA Record.
+bund.de: Valid DNSSEC and TLSA (DANE-EE) Record with traditional pki certificate
+bklosr.de: Valid DNSSEC and TLSA (DANE-EE) Record with traditional pki certificate
+ from untrusted pki (CACert.org)
+
 
 TODO:
 ======
@@ -19,24 +20,45 @@ TODO:
    but the IP adress cannot be authenticated.
 - Option to use system resolver with +ad flag? (No key material in extension...)
 - Testsuite
+   Explanation:
+   - Secure: correctly signed
+   - Insecure: not signed/authenticated
+   - failed: should be signed but is not...
+   - fits: fits certificate of ssl connection
+   - ok, secure: mark the IP/Certificate as secure in the UI
+   - ok: Do nothing. 
+   - error: Warn user. Maybe forgery?
    States for IP Record:
-   - Secure (correctly signed)
-   - Insecure (not signed/authenticated)
-   - failed (should be signed but is not...)
+   - existing, secure       -> ok, secure
+   - existing, insecure     -> ok
+   - existing, failed       -> error
+   - not-existing, secure   -> ok
+   - not-existing, insecure -> ok
+   - not-existing, failed   -> error
    States for TLSA record:
-   - existing, fits certificate of ssl connection, secure
-   - existing, fits, insecure
-   - existing, fits, failed
-   - existing, not fitting, secure
-   - existing, not fitting, insecure
-   - existing, not fitting, failed
-   - not existing, secure
-   - not existing, insecure
-   - not existing, failed
+   - existing, fits, secure         -> ok, secure
+   - existing, fits, insecure       -> ok
+   - existing, fits, failed         -> error
+   - existing, not fitting, secure  -> error
+   - existing, not fitting, insecure-> error
+   - existing, not fitting, failed  -> error
+   - not existing, secure           -> ok
+   - not existing, insecure         -> ok
+   - not existing, failed           -> error
+   There are further cases when you look at the TLSA verification parameters.
+   (PKIX-TA, PKIX-EE, DANE-TA, DANE-EE)
+- Implement selector field "SPKI: Use subject public key"
+   How to do that? Don't know howto get the data out of firefox.
+   Implement own ASN.1 Parser for that field?
+
    
+
 Thoughts:
 ==========
 - Authentication of DNS-Names in certificates is possible without accessing
    the server. We may implement that part in some other UI (maybe inside the
    view certificate thing?) - doesn't work, we need port and proto -> page-info
-- 
+- Howto display IP existing+secure, TLSA existing+fits+secure and 
+   traditional pki secure? Special marking like EV? -or- reduce visibility of
+   traditional pki lock icon (gray instead of green?)
+- Should DANE replace traditional PKI? or complement it?
