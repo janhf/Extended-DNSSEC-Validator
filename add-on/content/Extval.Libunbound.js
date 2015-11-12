@@ -61,7 +61,8 @@ org.os3sec.Extval.Libunbound = {
 				//XXX Gracefully exit and display something to the user.
 			}
 
-			Libunbound._init(libunboundFile);
+		    org.os3sec.Extval.Extension.logMsg("Loading system library: " +libunboundFile);
+		    org.os3sec.Extval.Libunbound._init(libunboundFile);
 		}
 		catch(e) {
 			// Failed loading from OS libs. Fall back to libraries distributed with plugin.

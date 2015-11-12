@@ -126,7 +126,7 @@ org.os3sec.Extval.CertTools = {
   // Check against tlsa-specification
   check_tlsa: function(cert, tlsa) {
 	// With usage is 0 or 2, we walk up the chain of certificates until we have a match;
-	// With usage is 1 or 3, we just validate the certifite.
+	// With usage is 1 or 3, we just validate the certificate.
 	
 	// With usage is 0 or 1, we need to validate against the Trusted CAs in the browser/OS;
 	// With usage is 2 or 3, we don't validage against Trusted CA's.
@@ -168,31 +168,39 @@ org.os3sec.Extval.CertTools = {
 	return false;
     },
 
+    compare: function(one, two) {
+	//org.os3sec.Extval.Extension.logMsg("comparing " + one + "\nwith " + two)
+	// This isn't correct: return one == two 
+	// Don't want to know why :-(
+	// So we do it by hand:
+	if (one.length != two.length) {
+	    // org.os3sec.Extval.Extension.logMsg("compare, length unequal: false")
+	    return false;
+	}
+
+	for(var i=0; i< one.length ;i++) {
+	    if (one[i] != two[i]) {
+		return false
+	    }
+	}
+	return true;
+	
+    },
 
   check_cert: function(cert, tlsa_record) {
     org.os3sec.Extval.Extension.logMsg("check_cert for: " + cert.commonName);
-    
-    var ihash = Components.interfaces.nsICryptoHash;
-    var hasher = Components.classes["@mozilla.org/security/hash;1"].createInstance(ihash);
-    var hashlen = 0;
-    if (tlsa_record.matchingType == 1) {
-        hasher.init(ihash.SHA256);
-        hashlen = 64;
-    }
-    else if (tlsa_record.matchingType == 2) {
-        hasher.init(ihash.SHA512);
-        hashlen = 128;
-    }
-    else {
-        // matchingType == 0 (exact content) is not supported yet
-	      org.os3sec.Extval.Extension.logMsg("TLSA record specifies full certificate info to match. Not supported. Rejecting validation!");
-        return false;
-    }
 
+    // Get the certificate
+    var len = {};
+    var der = cert.getRawDER(len);
+    // org.os3sec.Extval.Extension.logMsg("type of certRawDer is: " + typeof( der ))
+    // org.os3sec.Extval.Extension.logMsg("value of certRawDer is: " +  der )
+      
+    //We need to specify what to hash....
+    var toHash = 0;
     if (tlsa_record.selector == 0) {
-        var len = {};
-        var der = cert.getRawDER(len);
-        hasher.update(der, der.length);
+        //The full certificate
+        toHash = der;
     }
     else if(tlsa_record.selector == 1){
         //TODO: Check subject public key only...
@@ -205,13 +213,36 @@ org.os3sec.Extval.CertTools = {
         return false;
     }
     
-    var binHash = hasher.finish(false);
-    
-    // convert the binary hash data to a hex string.
-    var hash = [this.charcodeToHexString(binHash.charCodeAt(i)) for (i in binHash)].join("").toUpperCase();
 
-    org.os3sec.Extval.Extension.logMsg("checking tlsa record: " + hash + " / " + tlsa_record.certAssociation);
-    return hash == tlsa_record.certAssociation;
+    var ihash = Components.interfaces.nsICryptoHash;
+    var hasher = Components.classes["@mozilla.org/security/hash;1"].createInstance(ihash);
+    var hashlen = 0;
+    var binHash = 0;
+    
+    if (tlsa_record.matchingType == 1) {
+        hasher.init(ihash.SHA256);
+        hashlen = 64;
+        hasher.update(toHash, toHash.length);
+        binHash = hasher.finish(false);
+    }
+    else if (tlsa_record.matchingType == 2) {
+        hasher.init(ihash.SHA512);
+        hashlen = 128;
+        hasher.update(toHash, toHash.length);
+        binHash = hasher.finish(false);
+    }
+    else if (tlsa_record.matchingType == 0) {
+        // hex =  [this.charcodeToHexString(der[i]) for (i in len)].join("").toUpperCase();
+        org.os3sec.Extval.Extension.logMsg("checking tlsa record: " + der.length + " with " +  tlsa_record.certAssociation.length);
+
+        binHash = toHash;
+    }
+    else {
+        org.os3sec.Extval.Extension.logMsg("TLSA record specifies wrong value for Matching type. Not supported. Rejecting validation! We got: " + matchingType + ".  We want 0, 1, 2.");
+        return false;
+    }
+
+    return this.compare(binHash, tlsa_record.certAssociation);
   },
 
     // return the two-digit hexadecimal code for a byte
@@ -222,7 +253,9 @@ org.os3sec.Extval.CertTools = {
   //gets valid or invalid certificate used by the browser
   getCertificate: function(browser) {
     var uri = browser.currentURI;
+      org.os3sec.Extval.Extension.logMsg("getCertificate uri="+uri);
     var ui = browser.securityUI;
+      org.os3sec.Extval.Extension.logMsg("getCertificate ui="+ui);
     var cert = this.get_valid_cert(ui);
     if(!cert){
       cert = this.get_invalid_cert(uri);
@@ -258,41 +291,20 @@ org.os3sec.Extval.CertTools = {
 				.serverCert;
   },
   
-  get_invalid_cert_SSLStatus: function(uri) {
-    var recentCertsSvc = null;
-    // FF <= 19
-    if (typeof Components.classes['@mozilla.org/security/recentbadcerts;1'] !== 'undefined') {
-        recentCertsSvc = Components.classes['@mozilla.org/security/recentbadcerts;1']
-            .getService(Components.interfaces.nsIRecentBadCertsService);
-    }
-    // FF >= 20
-    else if (typeof Components.classes['@mozilla.org/security/x509certdb;1'] !== 'undefined') {
-        var certDB = Components.classes['@mozilla.org/security/x509certdb;1']
-            .getService(Components.interfaces.nsIX509CertDB);
-        if (!certDB) return null;
-
-        var privateMode = false;
-        // Seem to be unavailable in Nightly 24.0a1, so just to be safe...
-        if (typeof Components.classes['@mozilla.org/privatebrowsing;1'] !== 'undefined')
-            privateMode = Components.classes['@mozilla.org/privatebrowsing;1']
-                .getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
-
-        recentCertsSvc = certDB.getRecentBadCerts(privateMode);
-    }
-    else {
-        throw 'Failed to get "bad cert db" service (too new firefox version?)';
-    }
-
-    if (!recentCertsSvc)
-        return null;
-
-		var port = (uri.port == -1) ? 443 : uri.port;  
-
-		var hostWithPort = uri.host + ":" + port;
-		var gSSLStatus = recentCertsSvc.getRecentBadCert(hostWithPort);
-		if (!gSSLStatus)
-			return null;
-		return gSSLStatus;
+    get_invalid_cert_SSLStatus: function(uri) {
+	var recentCertsSvc = 
+	    Components.classes["@mozilla.org/security/recentbadcerts;1"]
+	    .getService(Components.interfaces.nsIRecentBadCertsService);
+	if (!recentCertsSvc)
+	    return null;
+	
+	var port = (uri.port == -1) ? 443 : uri.port;  
+	
+	var hostWithPort = uri.host + ":" + port;
+	var gSSLStatus = recentCertsSvc.getRecentBadCert(hostWithPort);
+	if (!gSSLStatus)
+	    return null;
+	return gSSLStatus;
   },
   
   //Override the certificate as trusted

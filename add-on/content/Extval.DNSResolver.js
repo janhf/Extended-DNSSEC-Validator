@@ -99,7 +99,7 @@ org.os3sec.Extval.DNSResolver = {
 	var result = new org.os3sec.Extval.DomainRecord();
 	result.domain = domain;
     
-	//do v6 and/or v6 resolving and add results
+	//do v4 and/or v6 resolving and add results
 	if(resolvipv4) {
 	    var res = this._executeLibunbound(domain, this.RRTYPE_A);
 	    result.addresses = result.addresses.concat(res.rdata);
@@ -120,49 +120,6 @@ org.os3sec.Extval.DNSResolver = {
 	return result;
     },
   
-    parseTLSARecord: function(tlsaStr) {
-	/*
-         * Usage field
-	 * Value        Short description                       
-	 * -------------------------------------------------------------
-	 * 0            CA Constraint
-	 * 1            Service certificate constraint
-         * 2            Trust anchor assertion
-         * 3            Domain issued certicate
-         * 4-254        Unassigned
-	 *
-	 * Reference:   https://tools.ietf.org/id/draft-ietf-dane-protocol-23
-	 * and:         https://tools.ietf.org/html/rfc6394
-         */
-	var usage = parseInt(tlsaStr.substring(0,2));
-		
-        /*
-         * Selector field
-         * 0 -- Full certificate
-         * 1 -- SubjectPublicKeyInfo
-         */
-	var selector = parseInt(tlsaStr.substring(2,4));
-
-	/*
-         * Matching type field
-	 * Value        Short description       Ref.
-	 * -----------------------------------------------------
-	 * 0            Full cert            [This]
-         * 1            SHA-256              NIST FIPS 180-2
-         * 2            SHA-512              NIST FIPS 180-2
-         * 3-254        Unassigned
-         */
-	var matchingType = parseInt(tlsaStr.substring(4,6));
-
-	// This contains the certificate hash
-	var certAssociation = tlsaStr.substring(6);
-
-	return {usage:           usage,
-		selector:        selector,
-		matchingType:    matchingType,
-		certAssociation: certAssociation.toUpperCase()};
-    },
-
     _doValidatedTLSALookup: function(domain) {
 	org.os3sec.Extval.Extension.logMsg("Starting validated cert lookup (TLSA) using libunbound");
     
@@ -171,15 +128,7 @@ org.os3sec.Extval.DNSResolver = {
     
 	var res = this._executeLibunbound("_443._tcp."+domain, this.RRTYPE_TLSA);
 
-	for(var i in res.rdata) {
-	    var tlsa = this.parseTLSARecord(res.rdata[i]);
-	    domainRecord.tlsa.push(tlsa);
-
-	    org.os3sec.Extval.Extension.logMsg("Found TLSA-Record: usage: " + tlsa.usage + 
-					       ", selector: " + tlsa.selector + 
-					       ", matchingType: " + tlsa.matchingType + 
-					       ", associated: " + tlsa.certAssociation);
-	}
+	domainRecord.tlsa = res.rdata;
 	domainRecord.setNxdomain( res.nxdomain  != 0);
 	domainRecord.setSecure(   res.secure    != 0);
 	domainRecord.setBogus(    res.bogus     != 0);
@@ -208,7 +157,7 @@ org.os3sec.Extval.DNSResolver = {
   },
   
   //parse rdata array from result set
-  parseRdata : function(len,data,rrtype) {
+  parseRdata : function(len, data, rrtype) {
     //len contains length of each item in data.
     //Iterate untill length = 0, which is the last item.
     //FIXME: find a nicer way for totalItems, currently limited with hardcoded max=10
@@ -247,42 +196,42 @@ org.os3sec.Extval.DNSResolver = {
           //iterate over 16 uint8 and convert to char code
           var tmp = new String();
           for(var j=0; j<16; j++) {
-            //inet_ntop('\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\1')
-            //octal representation of characters:
-            //parseInt(rdata.contents.contents[i+j].toString(),10).toString(8)
             tmp += String.fromCharCode(rdata.contents.contents[i+j].toString());
           }
-          //add ASCII representation to results
           results.push(this.inet6_ntop(tmp));
         }
         break;
       
-      case this.RRTYPE_TLSA:
+    case this.RRTYPE_TLSA:
         var rdata = ctypes.cast(data, ctypes.char.ptr.array(totalLines).ptr);
-        //iterate all lines
-        for(var i=0; i<totalLines;i++) {
-          //convert line to array of characters
-          //parsing the complete string fails due to ending null character
-	  org.os3sec.Extval.Extension.logMsg("Length: "+lengths[i]);
-          var tmp = new String();
-          var line = ctypes.cast(rdata.contents[i], ctypes.uint8_t.array(lengths[i]).ptr);
-          var hex;
-          //skip the first strange character
-          for(var j=0; j<lengths[i];j++) {
-            hex = org.os3sec.Extval.CertTools.charcodeToHexString(line.contents[j]);
-			//hex = line.contents[j].toString(16);
-			//if(hex < 16) { hex = "0" + hex; } // DONT LOOK AT ME
 
-			tmp += hex;
-          }
-          results.push(tmp);
+        //var rdata = ctypes.cast(data, ctypes.uint8_t.ptr.array(totalLines).ptr);
+        for(var i=0; i<totalLines;i++) {
+	    org.os3sec.Extval.Extension.logMsg("Length: "+lengths[i]);
+	    
+            var line = ctypes.cast(rdata.contents[i], ctypes.uint8_t.array(lengths[i]).ptr);
+	    var ass = new Array()
+	    for (var j = 3 ; j < lengths[i]; j++) {
+		ass.push(line.contents[j]);
+	    }
+	    org.os3sec.Extval.Extension.logMsg("value of line is: " + line)
+	    var tmp = 
+		{usage:                line.contents[0].toString(),
+		 selector:             line.contents[1].toString(),
+		 matchingType: line.contents[2].toString(),
+		 //certAssociation:  line.contents.slice(3)
+		 certAssociation: ass
+		};
+	    //org.os3sec.Extval.Extension.logMsg("value of tmp.usage is: " +  tmp.usage  )
+	    //org.os3sec.Extval.Extension.logMsg("value of tmp.selector is: " + tmp.selector  )
+	    //org.os3sec.Extval.Extension.logMsg("value of tmp.match is: " + tmp.matchingType  )
+	   // org.os3sec.Extval.Extension.logMsg("value of tmp.ass is: " + tmp.certAssociation  )
+	    results.push(tmp);
         }        
         break;
     }
-    
-    org.os3sec.Extval.Extension.logMsg("RData parsed: "+results);
-    
-    return results;
+      // org.os3sec.Extval.Extension.logMsg("RData parsed: "+results);
+      return results;
   },
   
   //Converts a packed inet6 address to a human readable IP address string
