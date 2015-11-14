@@ -223,13 +223,13 @@ org.os3sec.Extval.CertTools = {
         hasher.init(ihash.SHA256);
         hashlen = 64;
         hasher.update(toHash, toHash.length);
-        binHash = hasher.finish(false);
+        binHash = this.charArrayToBinArray(hasher.finish(false).split(""));
     }
     else if (tlsa_record.matchingType == 2) {
         hasher.init(ihash.SHA512);
         hashlen = 128;
         hasher.update(toHash, toHash.length);
-        binHash = hasher.finish(false);
+        binHash = this.charArrayToBinArray(hasher.finish(false).split(""));
     }
     else if (tlsa_record.matchingType == 0) {
         // hex =  [this.charcodeToHexString(der[i]) for (i in len)].join("").toUpperCase();
@@ -245,10 +245,18 @@ org.os3sec.Extval.CertTools = {
     return this.compare(binHash, tlsa_record.certAssociation);
   },
 
-    // return the two-digit hexadecimal code for a byte
-    charcodeToHexString: function(charcode) {
-	    return ("0" + charcode.toString(16)).slice(-2);
-    },
+  charArrayToBinArray: function(chararray) {
+    var binArray = [];
+    for(var i=0; i<chararray.length; i++) {
+      binArray[i] = chararray[i].charCodeAt(0);
+    }
+    return binArray;
+  },
+
+  // return the two-digit hexadecimal code for a byte
+  charcodeToHexString: function(charcode) {
+	  return ("0" + charcode.toString(16)).slice(-2);
+  },
   
   //gets valid or invalid certificate used by the browser
   getCertificate: function(browser) {
