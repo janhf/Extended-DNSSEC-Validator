@@ -103,15 +103,10 @@ if [ -f "chrome.manifest" ]; then
   #s/^(skin|locale)(\s+\S*\s+\S*\s+)(.*\/)$/\1\2jar:chrome\/$APP_NAME\.jar!\/\3/
   #
   # Then try this! (Same, but with characters escaped for bash :)
-#  sed -i -r s/^\(content\\s+\\S*\\s+\)\(\\S*\\/\)\(.*\)$/\\1jar:chrome\\/$APP_NAME\\.jar!\\/\\2\\3/ chrome.manifest
+  sed -i -r s/^\(content\\s+\\S*\\s+\)\(\\S*\\/\)\(.*\)$/\\1jar:chrome\\/$APP_NAME\\.jar!\\/\\2\\3/ chrome.manifest
 
 #  sed -i -r 's/^(skin|locale)\s+\S* '
-	echo 'content extval  jar:chrome/extval.jar!/content/
-locale  extval  en-US   jar:chrome/extval.jar!/locale/en-US/
-skin    extval  classic/1.0 jar:chrome/extval.jar!/skin/
-overlay chrome://browser/content/browser.xul    chrome://extval/content/ff-overlay.xul' > chrome.manifest
-
-  #sed -i -r s/^\(skin\|locale\)\(\\s+\\S*\\s+\\S*\\s+\)\(.*\\/\)$/\\1\\2jar:chrome\\/$APP_NAME\\.jar!\\/\\3/ chrome.manifest
+  sed -i -r s/^\(skin\|locale\)\(\\s+\\S*\\s+\\S*\\s+\)\(.*\\/\)$/\\1\\2jar:chrome\\/$APP_NAME\\.jar!\\/\\3/ chrome.manifest
   # OLD
   # sed -i -r s/^\(content\\s+\\S*\\s+\)\(\\S*\\/\)$/\\1jar:chrome\\/$APP_NAME\\.jar!\\/\\2/ chrome.manifest
   # sed -i -r s/^\(skin\|locale\)\(\\s+\\S*\\s+\\S*\\s+\)\(.*\\/\)$/\\1\\2jar:chrome\\/$APP_NAME\\.jar!\\/\\3/ chrome.manifest
